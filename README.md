@@ -23,7 +23,7 @@
 - 🖊️ **Story Generator** — Choose genre, tone, length, characters, setting
 - 📚 **My Dashboard** — View, manage, and filter your stories
 - 🌍 **Explore** — Browse public stories with search + genre filters
--    **Theme Switch** — Light/Dark mode toggle
+- 🌗  **Theme Switch** — Light/Dark mode toggle
 - 🔒 **Visibility Control** — Toggle any story between public/private instantly
 - ❤️ **Likes** — Like public stories from other authors
 - ✏️ **Edit** — Rename story titles inline

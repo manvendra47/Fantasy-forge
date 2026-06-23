@@ -27,6 +27,8 @@
 - 🔒 **Visibility Control** — Toggle any story between public/private instantly
 - ❤️ **Likes** — Like public stories from other authors
 - ✏️ **Edit** — Rename story titles inline
+- 🗑️ **Delete** — Remove stories you no longer want
+- ⏳ **Ratelimiter** — Prevents abuse of the AI generation endpoint
 - 🤖 **3 AI Backends** — Ollama (local, 100% free), HuggingFace (free tier), Groq (free tier, fastest)
 
 ---

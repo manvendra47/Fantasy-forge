@@ -6,7 +6,9 @@ import { protect } from '../middleware/auth.js';
 const router = express.Router();
 
 const signToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '3d' });
+ jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '3d' });
+
+
 
 // validate if username ,email are valid or not 
 const validateUserInput = ({ username, email, password }) => {
@@ -100,8 +102,20 @@ router.get('/me', protect, async (req, res) => {
 // PUT /api/auth/profile
 router.put('/profile', protect, async (req, res) => {
   try {
-    const { username, email, bio, avatar } = req.body;
+    const { Fullname, Contact, username, email, bio, avatar } = req.body;
     const updates = {};
+
+    // Validate and update fields
+    if(Fullname && (Fullname.length < 3 || Fullname.length > 50)) {
+      return res.status(400).json({ success: false, message: 'Fullname must be between 3 and 50 characters' });
+    }
+    if(Contact && !/^\+?[1-9]\d{1,14}$/.test(Contact)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid contact number' });
+    }
+    
+    if(Fullname && Fullname !== req.user.Fullname) updates.Fullname = Fullname;
+    if(Contact && Contact !== req.user.Contact) updates.Contact = Contact;
+
 
     if (username && username !== req.user.username) {
       const existingUser = await User.findOne({ username });

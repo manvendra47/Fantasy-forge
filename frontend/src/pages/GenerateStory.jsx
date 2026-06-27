@@ -12,6 +12,7 @@ const GENRES = [
   { id: 'cosmic', label: 'Cosmic', icon: '🌌', desc: 'Eldritch truths & vast unknowns' },
   { id: 'romance', label: 'Romance', icon: '🌹', desc: 'Fated love & enchanted realms' },
   { id: 'adventure', label: 'Adventure', icon: '🗺️', desc: 'Quests, dungeons & lost treasures' },
+  { id: 'necromance', label: 'Necromance', icon: '💀', desc: 'Necromancy & forbidden magic' },
 ];
 
 const TONES = [
@@ -21,9 +22,9 @@ const TONES = [
 ];
 
 const LENGTHS = [
-  { id: 'short', label: 'Short', desc: '~300 words', time: '1 min' },
-  { id: 'medium', label: 'Medium', desc: '~600 words', time: '3 min' },
-  { id: 'long', label: 'Long', desc: '~1000 words', time: '5 min' },
+  { id: 'short', label: 'Short', desc: '~500 words', time: '2 min' },
+  { id: 'medium', label: 'Medium', desc: '~700 words', time: '4 min' },
+  { id: 'long', label: 'Long', desc: '~1300 words', time: '7 min' },
 ];
 
 const PROMPTS = [
@@ -32,6 +33,11 @@ const PROMPTS = [
   "Two rival assassins from different kingdoms must cooperate to retrieve a stolen enchanted artifact.",
   "An immortal bard has sung the same song for a thousand years — until tonight, when the words change.",
   "A mapmaker discovers that every map she draws becomes real, with consequences she cannot undo.",
+  "A cursed forest appears overnight, and the villagers must venture inside to find out why.",
+  "A prince must choose between his kingdom and the love of a mysterious being from another realm.",
+  "A shipwrecked crew finds themselves on an island where time flows backward, and they must escape before they un-age into nothingness.",
+  "A scholar deciphers a prophecy that predicts the end of magic, but the prophecy itself is alive and changing.",
+  "A city built on clouds is threatened by a storm that seems to have a mind of its own, and only a child can calm it.",
 ];
 
 export default function GenerateStory() {
@@ -51,6 +57,7 @@ export default function GenerateStory() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [phase, setPhase] = useState('');
+  const [showAllPrompts, setShowAllPrompts] = useState(false);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
@@ -129,7 +136,7 @@ export default function GenerateStory() {
           />
           <div style={{ marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginRight: '4px', alignSelf: 'center' }}>Try:</span>
-            {PROMPTS.slice(0, 3).map((p, i) => (
+            {(showAllPrompts ? PROMPTS : PROMPTS.slice(0, 3)).map((p, i) => (
               <button
                 key={i}
                 type="button"
@@ -151,6 +158,26 @@ export default function GenerateStory() {
                 {p.slice(0, 48)}…
               </button>
             ))}
+            {PROMPTS.length > 3 && (
+              <button
+                type="button"
+                onClick={() => setShowAllPrompts((prev) => !prev)}
+                style={{
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '6px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  color: 'var(--amethyst-light)',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                {showAllPrompts ? 'Show less' : '⋯ More'}
+              </button>
+            )}
           </div>
         </div>
 

@@ -2,6 +2,18 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
+  Fullname: {
+    type: String,
+    trim: true,
+    minlength: [3, 'Fullname must be at least 3 characters'],
+    maxlength: [50, 'Fullname cannot exceed 50 characters'],
+    match: [/^[a-zA-Z\s]+$/, 'Fullname can only contain letters and spaces'],
+  },
+  Contact: {
+    type: String,
+    trim: true,
+    match: [/^\+?[1-9]\d{1,14}$/, 'Please provide a valid contact number'],
+  },
   username: {
     type: String,
     required: [true, 'Username is required'],

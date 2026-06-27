@@ -9,12 +9,13 @@ const GENRE_PROMPTS = {
   cosmic: 'a cosmic horror fantasy where mortals glimpse incomprehensible eldritch truths',
   romance: 'a romantic fantasy with fated lovers, enchanted realms, and heartfelt emotion',
   adventure: 'a classic adventure quest with brave companions, hidden dungeons, and lost treasures',
+  necromance: 'a dark fantasy story involving necromancy, forbidden magic, and the consequences of raising the dead',
 };
 
 const LENGTH_TOKENS = {
-  short: { max: 400, words: '250–350 words', chars: '1,500–2,100 characters' },
-  medium: { max: 800, words: '500–700 words', chars: '3,000–4,200 characters' },
-  long: { max: 1400, words: '900–1200 words', chars: '5,400–7,200 characters' },
+  short: { max: 600, words: '450–550 words', chars: '2,000–2,600 characters' },
+  medium: { max: 800, words: '600–900 words', chars: '4,000–5,200 characters' },
+  long: { max: 1400, words: '1200–1500 words', chars: '6,400–8,200 characters' },
 };
 
 function buildSystemPrompt() {
@@ -33,8 +34,8 @@ STORY: <story>`;
 function buildUserPrompt(params) {
   const { prompt, genre, tone, length, characters, setting } = params;
   const genreDesc = GENRE_PROMPTS[genre] || GENRE_PROMPTS.epic;
-  const lengthDesc = LENGTH_TOKENS[length]?.words || '500–700 words';
-  const charDesc = LENGTH_TOKENS[length]?.chars || '3,000–4,200 characters';
+  const lengthDesc = LENGTH_TOKENS[length]?.words || '600–900 words';
+  const charDesc = LENGTH_TOKENS[length]?.chars || '4,000–5,200 characters';
 
   let characterPart = '';
   if (characters && characters.length > 0) {
@@ -59,21 +60,28 @@ STORY: <story>`;
 }
 
 function parseGeneratedStory(text, fallbackTitle) {
-  const normalized = text.replace(/\r/g, '');
-  const titleMatch = normalized.match(/TITLE:\s*(.+?)(?:\n\n|$)/i);
-  const storyMatch = normalized.match(/STORY:\s*([\s\S]+)/i);
+  const normalized = text.replace(/\r/g, '').trim();
 
-  if (titleMatch && storyMatch) {
-    return {
-      title: titleMatch[1].trim().slice(0, 120),
-      content: storyMatch[1].trim(),
-    };
+  const compactMatch = normalized.match(/^TITLE:\s*(.+?)STORY:\s*([\s\S]+)$/im);
+  if (compactMatch) {
+    const title = compactMatch[1].trim().replace(/\s+/g, ' ').slice(0, 120);
+    const content = compactMatch[2].trim();
+    return { title, content };
   }
 
-  const lines = normalized.trim().split('\n');
+  const titleMatch = normalized.match(/^TITLE:\s*(.+?)(?=\n\n|\nSTORY:|$)/im);
+  const storyMatch = normalized.match(/^STORY:\s*([\s\S]+)$/im);
+
+  if (titleMatch && storyMatch) {
+    const title = titleMatch[1].trim().replace(/\s+/g, ' ').slice(0, 120);
+    const content = storyMatch[1].trim();
+    return { title, content };
+  }
+
+  const lines = normalized.split('\n').map((line) => line.trim()).filter(Boolean);
   return {
-    title: lines[0]?.trim().slice(0, 120) || fallbackTitle,
-    content: lines.slice(1).join('\n').trim() || normalized.trim(),
+    title: lines[0]?.replace(/^TITLE:\s*/i, '').slice(0, 120) || fallbackTitle,
+    content: lines.slice(1).join('\n').trim() || normalized,
   };
 }
 
@@ -183,26 +191,71 @@ async function generateWithGroq(params) {
   return { text: text.trim(), model: `groq/${model}` };
 }
 
-// ─── Auto-generate title ────────────────────────────────────────────────────
 // ─── Main export ────────────────────────────────────────────────────────────
-export async function generateStory(params) {
-  const provider = process.env.AI_PROVIDER || 'ollama';
+const PROVIDERS = {
+  ollama:       { fn: generateWithOllama,       label: 'Ollama (local)',    isAvailable: () => true },
+  groq:         { fn: generateWithGroq,         label: 'Groq',             isAvailable: () => !!process.env.GROQ_API_KEY },
+  huggingface:  { fn: generateWithHuggingFace,  label: 'HuggingFace',      isAvailable: () => !!process.env.HUGGINGFACE_API_KEY },
+};
 
-  let result;
-  if (provider === 'huggingface') {
-    result = await generateWithHuggingFace(params);
-  } else if (provider === 'groq') {
-    result = await generateWithGroq(params);
-  } else {
-    result = await generateWithOllama(params);
+// ─── Fallback chain ───────────────────────────────────────────────────────────
+// Tries providers in order:  primary (from AI_PROVIDER env)  →  the other two
+// Emits progress via onProgress(message) so the route can SSE/log status to the client.
+// Throws a structured error only when every provider has failed.
+
+export async function generateStory(params, onProgress = () => {}) {
+  const primary = process.env.AI_PROVIDER || 'ollama';
+
+  // Build the ordered list: primary first, then the remaining two in a fixed order
+  const fallbackOrder = ['ollama', 'groq', 'huggingface'];
+  const orderedProviders = [
+    primary,
+    ...fallbackOrder.filter((p) => p !== primary),
+  ];
+
+  const errors = [];   // collect failures for the final error message
+
+  for (const name of orderedProviders) {
+    const provider = PROVIDERS[name];
+
+    if (!provider) {
+      errors.push({ provider: name, reason: 'Unknown provider name in AI_PROVIDER env' });
+      continue;
+    }
+
+    if (!provider.isAvailable()) {
+      // No key configured — skip silently without telling the user
+      errors.push({ provider: name, reason: 'Not configured (missing API key)' });
+      continue;
+    }
+
+    if (errors.length > 0) {
+      // We're past the primary — notify the client we're switching
+      onProgress(`Switching to ${provider.label}…`);
+    }
+
+    try {
+      console.log(`[AI] Trying ${provider.label}…`);
+      const result = await provider.fn(params);
+      console.log(`[AI] Success with ${provider.label}`);
+
+      const parsedStory = parseGeneratedStory(result.text, `A ${params.genre.charAt(0).toUpperCase() + params.genre.slice(1)} Tale`);
+
+      return { content: parsedStory.content, title: parsedStory.title, aiModel: result.model };
+
+    } catch (err) {
+      console.warn(`[AI] ${provider.label} failed: ${err.message}`);
+      errors.push({ provider: name, reason: err.message });
+      // Loop continues → tries next provider
+    }
   }
 
-  const fallbackTitle = `A ${params.genre.charAt(0).toUpperCase() + params.genre.slice(1)} Tale`;
-  const story = parseGeneratedStory(result.text, fallbackTitle);
+  // Every provider failed — build a readable summary for the client
+  const summary = errors
+    .map((e) => `${e.provider}: ${e.reason}`)
+    .join(' | ');
 
-  return {
-    content: story.content,
-    title: story.title,
-    aiModel: result.model,
-  };
+  throw new Error(`All AI providers failed. ${summary}`);
 }
+
+

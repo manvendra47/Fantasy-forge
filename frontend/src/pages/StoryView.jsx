@@ -26,6 +26,9 @@ export default function StoryView() {
   const [toggling, setToggling] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
+  const [editingContent, setEditingContent] = useState(false);
+  const [contentDraft, setContentDraft] = useState('');
+  const [savingContent, setSavingContent] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -38,6 +41,7 @@ export default function StoryView() {
         setLikeCount(s.likeCount || 0);
         setIsLiked(s.isLiked || false);
         setTitleDraft(s.title);
+        setContentDraft(s.content || '');
       } catch (err) {
         setError(err.response?.data?.message || 'Story not found');
       } finally {
@@ -79,6 +83,20 @@ export default function StoryView() {
       setEditingTitle(false);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const saveContent = async () => {
+    if (!contentDraft.trim()) return;
+    setSavingContent(true);
+    try {
+      await api.patch(`/stories/${id}`, { content: contentDraft.trim() });
+      setStory(s => ({ ...s, content: contentDraft.trim() }));
+      setEditingContent(false);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSavingContent(false);
     }
   };
 
@@ -269,21 +287,55 @@ export default function StoryView() {
       </div>
 
       {/* Story content */}
-      <div style={{
-        fontFamily: 'var(--font-body)',
-        fontSize: '18px',
-        lineHeight: '1.85',
-        color: '#ddd8f5',
-        letterSpacing: '0.01em',
-      }}>
-        {story.content.split('\n').map((para, i) => (
-          para.trim() ? (
-            <p key={i} style={{ marginBottom: '1.4em' }}>{para}</p>
-          ) : (
-            <div key={i} style={{ height: '0.6em' }} />
-          )
-        ))}
-      </div>
+      {isOwner && (
+        <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => {
+              setEditingContent(!editingContent);
+              if (!editingContent) setContentDraft(story.content || '');
+            }}
+            className="ff-btn ff-btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '13px' }}
+          >
+            <Edit3 size={14} />
+            {editingContent ? 'Cancel Edit' : 'Continue Writing'}
+          </button>
+        </div>
+      )}
+
+      {editingContent ? (
+        <div style={{ display: 'grid', gap: '10px' }}>
+          <textarea
+            className="ff-input"
+            value={contentDraft}
+            onChange={(e) => setContentDraft(e.target.value)}
+            rows={16}
+            style={{ minHeight: '320px', lineHeight: '1.7', fontFamily: 'var(--font-body)', fontSize: '16px', resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+            <button onClick={() => setEditingContent(false)} className="ff-btn ff-btn-secondary">Cancel</button>
+            <button onClick={saveContent} disabled={savingContent} className="ff-btn ff-btn-primary">
+              {savingContent ? 'Saving…' : 'Save Chapter'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: '18px',
+          lineHeight: '1.85',
+          color: '#ddd8f5',
+          letterSpacing: '0.01em',
+        }}>
+          {story.content.split('\n').map((para, i) => (
+            para.trim() ? (
+              <p key={i} style={{ marginBottom: '1.4em' }}>{para}</p>
+            ) : (
+              <div key={i} style={{ height: '0.6em' }} />
+            )
+          ))}
+        </div>
+      )}
 
       {/* Tags */}
       {story.tags && story.tags.length > 0 && (

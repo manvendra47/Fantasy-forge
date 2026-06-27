@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
   const [form, setForm] = useState({
+    Fullname: user?.Fullname || '',
+    Contact: user?.Contact || '',
     username: user?.username || '',
     email: user?.email || '',
     avatar: user?.avatar || '',
@@ -30,6 +32,8 @@ export default function ProfilePage() {
         email: form.email,
         avatar: form.avatar,
         bio: form.bio,
+        Fullname: form.Fullname,
+        Contact: form.Contact,
       });
       setMessage('Profile updated successfully.');
     } catch (err) {
@@ -65,30 +69,58 @@ export default function ProfilePage() {
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '18px' }}>
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <label className="ff-label">Username</label>
-          <input
-            className="ff-input"
-            type="text"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            placeholder="Your username"
-            required
-          />
+        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <label className="ff-label">Full Name</label>
+            <input
+              className="ff-input"
+              type="text"
+              name="Fullname"
+              value={form.Fullname}
+              onChange={handleChange}
+              placeholder="Your full name (must be 3-50 characters)"
+            />
+          </div>
+
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <label className="ff-label">Contact</label>
+            <input
+              className="ff-input"
+              type="text"
+              name="Contact"
+              value={form.Contact}
+              onChange={handleChange}
+              placeholder="Phone or social handle (must be a valid format)"
+            />
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gap: '12px' }}>
-          <label className="ff-label">Email</label>
-          <input
-            className="ff-input"
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="your@email.com"
-            required
-          />
+        <div style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <label className="ff-label">Username</label>
+            <input
+              className="ff-input"
+              type="text"
+              name="username"
+              value={form.username}
+              onChange={handleChange}
+              placeholder="Your username"
+              required
+            />
+          </div>
+
+          <div style={{ display: 'grid', gap: '12px' }}>
+            <label className="ff-label">Email</label>
+            <input
+              className="ff-input"
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="your@email.com"
+              required
+            />
+          </div>
         </div>
 
         <div style={{ display: 'grid', gap: '12px' }}>

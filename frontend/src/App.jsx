@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import GenerateStory from './pages/GenerateStory';
+import WriteStory from './pages/WriteStory';
 import StoryView from './pages/StoryView';
 import Explore from './pages/Explore';
 import ProfilePage from './pages/ProfilePage';
@@ -74,6 +75,10 @@ export default function App() {
           <Route
             path="/generate"
             element={<PrivateRoute><GenerateStory /></PrivateRoute>}
+          />
+          <Route
+            path="/write"
+            element={<PrivateRoute><WriteStory /></PrivateRoute>}
           />
           <Route
             path="/profile"

@@ -4,10 +4,12 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
 import storyRoutes from './routes/stories.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
 const app = express();
+app.use(cookieParser());
 
 // Connect to MongoDB
 connectDB();

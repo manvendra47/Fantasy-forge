@@ -1,8 +1,10 @@
 import express from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import Story from '../models/Story.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { generateStory } from '../config/aiService.js';
+
+const MANUAL_GENRE_ENUM = ['epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure'];
 
 const router = express.Router();
 
@@ -11,7 +13,7 @@ const generateLimiter = rateLimit({
   max: 3, // limit each user to 3 generate requests per second
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.user?._id?.toString() || req.ip,
+  keyGenerator: (req) => req.user?._id?.toString() || ipKeyGenerator(req),
   handler: (req, res) => res.status(429).json({
     success: false,
     message: 'Too many story generation requests. Please wait a moment and try again.',
@@ -73,6 +75,46 @@ router.post('/generate', protect, generateLimiter, async (req, res) => {
   } catch (error) {
     console.error('Story generation error:', error.message);
     res.status(500).json({ success: false, message: `Story generation failed: ${error.message}` });
+  }
+});
+
+// POST /api/stories/manual  — save a manually written story draft
+router.post('/manual', protect, async (req, res) => {
+  try {
+    const { title, prompt, content, genre = 'epic', visibility = 'private' } = req.body;
+
+    if (!title || title.trim().length < 2) {
+      return res.status(400).json({ success: false, message: 'Please provide a story title' });
+    }
+
+    if (!content || content.trim().length < 20) {
+      return res.status(400).json({ success: false, message: 'Please write at least 20 characters of story content' });
+    }
+
+    if (!MANUAL_GENRE_ENUM.includes(genre)) {
+      return res.status(400).json({ success: false, message: 'Invalid genre' });
+    }
+
+    const story = await Story.create({
+      title: title.trim(),
+      content: content.trim(),
+      prompt: (prompt || title).trim(),
+      genre,
+      tone: 'heroic',
+      length: 'medium',
+      characters: [],
+      setting: '',
+      tags: [],
+      visibility,
+      author: req.user._id,
+      aiModel: 'manual',
+    });
+
+    await story.populate('author', 'username avatar');
+    res.status(201).json({ success: true, story });
+  } catch (error) {
+    console.error('Manual story save error:', error.message);
+    res.status(500).json({ success: false, message: 'Unable to save your story' });
   }
 });
 
@@ -181,11 +223,12 @@ router.patch('/:id/visibility', protect, async (req, res) => {
 // PATCH /api/stories/:id  — update story metadata (title, tags, visibility)
 router.patch('/:id', protect, async (req, res) => {
   try {
-    const { title, tags, visibility } = req.body;
+    const { title, content, tags, visibility } = req.body;
     const story = await Story.findOne({ _id: req.params.id, author: req.user._id });
     if (!story) return res.status(404).json({ success: false, message: 'Story not found or not authorized' });
 
     if (title) story.title = title;
+    if (content) story.content = content;
     if (tags) story.tags = tags;
     if (visibility) story.visibility = visibility;
     await story.save();

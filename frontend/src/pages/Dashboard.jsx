@@ -114,10 +114,16 @@ export default function Dashboard() {
           </select>
         </div>
 
-        <Link to="/generate" className="ff-btn ff-btn-primary">
-          <PlusCircle size={16} />
-          Forge New Story
-        </Link>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <Link to="/generate" className="ff-btn ff-btn-primary">
+            <PlusCircle size={16} />
+            Forge New Story
+          </Link>
+          <Link to="/write" className="ff-btn ff-btn-secondary">
+            <Feather size={16} />
+            Write Manually
+          </Link>
+        </div>
       </div>
 
       {/* Story grid */}
@@ -136,9 +142,14 @@ export default function Dashboard() {
           <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontFamily: 'var(--font-body)' }}>
             Your legend awaits. Forge your first tale.
           </p>
-          <Link to="/generate" className="ff-btn ff-btn-primary">
-            <Feather size={16} /> Begin Writing
-          </Link>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/generate" className="ff-btn ff-btn-primary">
+              <Feather size={16} /> Begin Writing
+            </Link>
+            <Link to="/write" className="ff-btn ff-btn-secondary">
+              <Feather size={16} /> Write Manually
+            </Link>
+          </div>
         </div>
       ) : (
         <>

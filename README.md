@@ -247,7 +247,7 @@ long: { max: 2000, words: '1400–1800 words' },
 | `HUGGINGFACE_API_KEY` | If HF | — | HuggingFace access token |
 | `HUGGINGFACE_MODEL` | If HF | Mistral-7B-Instruct-v0.2 | HF model ID |
 | `GROQ_API_KEY` | If Groq | — | Groq API key |
-| `GROQ_MODEL` | If Groq | llama3-8b-8192 | Groq model ID |
+| `GROQ_MODEL` | If Groq | llama-3.3-70b-versatile | Groq model ID |
 | `CLIENT_URL` | No | http://localhost:5173 | CORS allowed origin |
 
 ---

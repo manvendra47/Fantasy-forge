@@ -5,7 +5,7 @@ import api from '../utils/api';
 import { Search, Compass } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const GENRES = ['all', 'epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure'];
+const GENRES = ['all', 'epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure', 'necromance'];
 
 export default function Explore() {
   const { user } = useAuth();

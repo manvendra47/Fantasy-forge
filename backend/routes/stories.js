@@ -4,7 +4,7 @@ import Story from '../models/Story.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { generateStory } from '../config/aiService.js';
 
-const MANUAL_GENRE_ENUM = ['epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure'];
+const MANUAL_GENRE_ENUM = ['epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure', 'necromance'];
 
 const router = express.Router();
 

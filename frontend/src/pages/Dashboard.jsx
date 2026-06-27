@@ -5,7 +5,7 @@ import StoryCard from '../components/StoryCard';
 import api from '../utils/api';
 import { BookOpen, Globe, Lock, PlusCircle, Feather, ChevronDown } from 'lucide-react';
 
-const GENRES = ['all', 'epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure'];
+const GENRES = ['all', 'epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure', 'necromance'];
 
 export default function Dashboard() {
   const { user } = useAuth();

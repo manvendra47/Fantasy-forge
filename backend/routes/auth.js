@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
+import sendWelcomeEmail from '../utils/SendingMail.js';
 
 const router = express.Router();
 
@@ -67,6 +68,9 @@ router.post('/register', authLimiter, async (req, res) => {
         createdAt: user.createdAt,
       },
     });
+    // Send welcome email (fire and forget, no need to await)
+    sendWelcomeEmail(user.email, user.username);
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

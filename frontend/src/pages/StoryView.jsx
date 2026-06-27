@@ -10,7 +10,7 @@ import {
 const GENRE_COLORS = {
   epic: '#8a6eff', dark: '#cc4444', whimsical: '#4db86e',
   mythological: '#c9a227', steampunk: '#b87333', cosmic: '#4488cc',
-  romance: '#cc6699', adventure: '#44aacc',
+  romance: '#cc6699', adventure: '#44aacc', necromance: '#5f3f53',
 };
 
 export default function StoryView() {

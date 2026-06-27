@@ -12,11 +12,13 @@ const GENRE_COLORS = {
   cosmic: '#4488cc',
   romance: '#cc6699',
   adventure: '#44aacc',
+  necromance: '#5f3f53',
 };
 
 const GENRE_ICONS = {
   epic: '⚔️', dark: '🌑', whimsical: '✨', mythological: '🏛️',
   steampunk: '⚙️', cosmic: '🌌', romance: '🌹', adventure: '🗺️',
+  necromance: '💀',
 };
 
 export default function StoryCard({ story, onVisibilityChange, showAuthor = false }) {

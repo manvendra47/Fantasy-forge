@@ -17,7 +17,7 @@ const storySchema = new mongoose.Schema({
   },
   genre: {
     type: String,
-    enum: ['epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure'],
+    enum: ['epic', 'dark', 'whimsical', 'mythological', 'steampunk', 'cosmic', 'romance', 'adventure', 'necromance'],
     default: 'epic',
   },
   tone: {

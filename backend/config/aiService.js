@@ -85,60 +85,30 @@ function parseGeneratedStory(text, fallbackTitle) {
   };
 }
 
-// ─── Ollama (local, free) ───────────────────────────────────────────────────
-async function generateWithOllama(params) {
-  const model = process.env.OLLAMA_MODEL || 'llama3';
-  const baseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
-
-  const response = await fetch(`${baseUrl}/api/generate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      system: buildSystemPrompt(),
-      prompt: buildUserPrompt(params),
-      stream: false,
-      options: {
-        temperature: 0.85,
-        top_p: 0.9,
-        num_predict: LENGTH_TOKENS[params.length]?.max || 800,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Ollama error: ${err}`);
-  }
-
-  const data = await response.json();
-  return { text: data.response, model: `ollama/${model}` };
-}
-
 // ─── HuggingFace Inference API (free tier) ─────────────────────────────────
 async function generateWithHuggingFace(params) {
-  const model = process.env.HUGGINGFACE_MODEL || 'mistralai/Mistral-7B-Instruct-v0.2';
+  const model =
+    process.env.HUGGINGFACE_MODEL || "mistralai/Mistral-7B-Instruct-v0.2";
   const apiKey = process.env.HUGGINGFACE_API_KEY;
 
-  if (!apiKey) throw new Error('HUGGINGFACE_API_KEY not set');
+  if (!apiKey) throw new Error("HUGGINGFACE_API_KEY not set");
 
   const fullPrompt = `<s>[INST] ${buildSystemPrompt()}\n\n${buildUserPrompt(params)} [/INST]`;
 
-  const response = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
-    method: 'POST',
+  // FIX: Directed to the modernized global routing endpoint to avoid ENOTFOUND failures
+  const response = await fetch("https://huggingface.co", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: fullPrompt,
-      parameters: {
-        max_new_tokens: LENGTH_TOKENS[params.length]?.max || 800,
-        temperature: 0.85,
-        top_p: 0.9,
-        do_sample: true,
-        return_full_text: false,
-      },
+      model: model, // Target repository goes inside the payload
+      messages: [{ role: "user", content: fullPrompt }],
+      max_tokens: LENGTH_TOKENS[params.length]?.max || 800,
+      temperature: 0.85,
+      top_p: 0.9,
+      stream: false,
     }),
   });
 
@@ -148,10 +118,15 @@ async function generateWithHuggingFace(params) {
   }
 
   const data = await response.json();
-  const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
-  if (!text) throw new Error('No text returned from HuggingFace');
 
-  return { text: text.trim(), model: `huggingface/${model.split('/').pop()}` };
+  // FIX: Read content directly from the standardized choices response matrix
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("No text returned from HuggingFace");
+
+  return {
+    text: text.trim(),
+    model: `huggingface/${model.split("/").pop()}`,
+  };
 }
 
 // ─── Groq (free tier, fast) ────────────────────────────────────────────────
@@ -193,9 +168,16 @@ async function generateWithGroq(params) {
 
 // ─── Main export ────────────────────────────────────────────────────────────
 const PROVIDERS = {
-  ollama:       { fn: generateWithOllama,       label: 'Ollama (local)',    isAvailable: () => true },
-  groq:         { fn: generateWithGroq,         label: 'Groq',             isAvailable: () => !!process.env.GROQ_API_KEY },
-  huggingface:  { fn: generateWithHuggingFace,  label: 'HuggingFace',      isAvailable: () => !!process.env.HUGGINGFACE_API_KEY },
+  groq: {
+    fn: generateWithGroq,
+    label: "Groq",
+    isAvailable: () => !!process.env.GROQ_API_KEY,
+  },
+  huggingface: {
+    fn: generateWithHuggingFace,
+    label: "HuggingFace",
+    isAvailable: () => !!process.env.HUGGINGFACE_API_KEY,
+  },
 };
 
 // ─── Fallback chain ───────────────────────────────────────────────────────────
@@ -204,10 +186,10 @@ const PROVIDERS = {
 // Throws a structured error only when every provider has failed.
 
 export async function generateStory(params, onProgress = () => {}) {
-  const primary = process.env.AI_PROVIDER || 'ollama';
+  const primary = process.env.AI_PROVIDER || 'groq';  // default to Groq if not set
 
-  // Build the ordered list: primary first, then the remaining two in a fixed order
-  const fallbackOrder = ['ollama', 'groq', 'huggingface'];
+  // Build the ordered list: primary first, then the remaining in a fixed order
+  const fallbackOrder = [ 'groq', 'huggingface'];
   const orderedProviders = [
     primary,
     ...fallbackOrder.filter((p) => p !== primary),

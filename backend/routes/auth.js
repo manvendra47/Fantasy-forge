@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 
@@ -8,7 +9,19 @@ const router = express.Router();
 const signToken = (id) =>
  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '3d' });
 
-
+const authLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: ipKeyGenerator,
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      message: 'Too many attempts. Please try again later.',
+    });
+  },
+});
 
 // validate if username ,email are valid or not 
 const validateUserInput = ({ username, email, password }) => {
@@ -27,7 +40,7 @@ const validateUserInput = ({ username, email, password }) => {
 };
 
 // POST /api/auth/register
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -60,7 +73,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 

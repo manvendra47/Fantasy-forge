@@ -16,7 +16,7 @@ export const authLimiter = rateLimit({
 
 export const generateLimiter = rateLimit({
   windowMs: 5000, // 5 second window
-  max: 3, // limit each user to 3 generate requests per 5 seconds
+  max: 5, // limit each user to 5 generate requests per 5 seconds
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => req.user?._id?.toString() || ipKeyGenerator(req),

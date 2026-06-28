@@ -14,8 +14,8 @@ const GENRE_PROMPTS = {
 
 const LENGTH_TOKENS = {
   short: { max: 600, words: '450–550 words', chars: '2,000–2,600 characters' },
-  medium: { max: 800, words: '600–900 words', chars: '4,000–5,200 characters' },
-  long: { max: 1400, words: '1200–1500 words', chars: '6,400–8,200 characters' },
+  medium: { max: 1500, words: '900–1500 words', chars: '6,000–9,500 characters' },
+  long: { max: 2500, words: '1700–2400 words', chars: '8,400–12,200 characters' },
 };
 
 function buildSystemPrompt() {

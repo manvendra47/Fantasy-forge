@@ -30,7 +30,7 @@ app.use('/api/stories', storyRoutes);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    aiProvider: process.env.AI_PROVIDER || 'ollama',
+    aiProvider: process.env.AI_PROVIDER ,
     timestamp: new Date().toISOString(),
   });
 });
@@ -51,6 +51,6 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 FantasyForge server running on port ${PORT}`);
-  console.log(`   AI provider: ${process.env.AI_PROVIDER || 'ollama'}`);
+  console.log(` FantasyForge server running on port ${PORT}`);
+  console.log(`  AI provider: ${process.env.AI_PROVIDER }`);
 });

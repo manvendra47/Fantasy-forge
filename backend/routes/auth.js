@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { authLimiter } from '../middleware/ratelimiter.js';
 import User from '../models/User.js';
 import { protect } from '../middleware/auth.js';
 import sendWelcomeEmail from '../utils/SendingMail.js';
@@ -10,19 +10,7 @@ const router = express.Router();
 const signToken = (id) =>
  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '3d' });
 
-const authLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000,
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: ipKeyGenerator,
-  handler: (req, res) => {
-    res.status(429).json({
-      success: false,
-      message: 'Too many attempts. Please try again later.',
-    });
-  },
-});
+
 
 // validate if username ,email are valid or not 
 const validateUserInput = ({ username, email, password }) => {

@@ -1,5 +1,5 @@
 import express from 'express';
-import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
+import { generateLimiter } from '../middleware/ratelimiter.js';
 import Story from '../models/Story.js';
 import { protect, optionalAuth } from '../middleware/auth.js';
 import { generateStory } from '../config/aiService.js';
@@ -8,17 +8,6 @@ const MANUAL_GENRE_ENUM = ['epic', 'dark', 'whimsical', 'mythological', 'steampu
 
 const router = express.Router();
 
-const generateLimiter = rateLimit({
-  windowMs: 1000, // 1 second window
-  max: 3, // limit each user to 3 generate requests per second
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => req.user?._id?.toString() || ipKeyGenerator(req),
-  handler: (req, res) => res.status(429).json({
-    success: false,
-    message: 'Too many story generation requests. Please wait a moment and try again.',
-  }),
-});
 
 // POST /api/stories/generate  — generate a new story with AI
 router.post('/generate', protect, generateLimiter, async (req, res) => {

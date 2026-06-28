@@ -12,7 +12,7 @@
 | Backend | Node.js + Express 4 |
 | Database | MongoDB + Mongoose |
 | Auth | JWT (JSON Web Tokens) + bcrypt |
-| AI Providers | Ollama (local) / HuggingFace / Groq |
+| AI Providers | HuggingFace / Groq |
 | Styling | Custom CSS with CSS variables |
 
 ---
@@ -103,23 +103,7 @@ Open **http://localhost:5173** in your browser.
 
 FantasyForge supports three free AI providers. Pick one and set `AI_PROVIDER` in `.env`.
 
-### Option A: Ollama (recommended — fully local, no API key)
-
-1. Install Ollama: https://ollama.com
-2. Pull a model:
-   ```bash
-   ollama pull llama3         # 4.7 GB, best quality
-   ollama pull mistral        # 4.1 GB, fast
-   ollama pull phi3           # 2.3 GB, lightweight
-   ollama pull gemma2         # 5.4 GB, great stories
-   ```
-3. Set in `.env`:
-   ```env
-   AI_PROVIDER=ollama
-   OLLAMA_MODEL=llama3
-   ```
-
-### Option B: HuggingFace Inference API (free tier, no GPU needed)
+### Option A: HuggingFace Inference API (free tier, no GPU needed)
 
 1. Sign up at https://huggingface.co
 2. Go to Settings → Access Tokens → New token (read permission)
@@ -130,7 +114,7 @@ FantasyForge supports three free AI providers. Pick one and set `AI_PROVIDER` in
    HUGGINGFACE_MODEL=mistralai/Mistral-7B-Instruct-v0.2
    ```
 
-### Option C: Groq (free tier, extremely fast inference)
+### Option B: Groq (free tier, extremely fast inference)
 
 1. Sign up at https://console.groq.com
 2. Create an API key
@@ -242,8 +226,6 @@ long: { max: 2000, words: '1400–1800 words' },
 | `MONGODB_URI` | Yes | — | MongoDB connection string |
 | `JWT_SECRET` | Yes | — | JWT signing secret (use a long random string) |
 | `AI_PROVIDER` | No | ollama | `ollama`, `huggingface`, or `groq` |
-| `OLLAMA_BASE_URL` | If Ollama | http://localhost:11434 | Ollama API URL |
-| `OLLAMA_MODEL` | If Ollama | llama3 | Model name in Ollama |
 | `HUGGINGFACE_API_KEY` | If HF | — | HuggingFace access token |
 | `HUGGINGFACE_MODEL` | If HF | Mistral-7B-Instruct-v0.2 | HF model ID |
 | `GROQ_API_KEY` | If Groq | — | Groq API key |

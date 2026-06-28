@@ -254,4 +254,4 @@ long: { max: 2000, words: '1400–1800 words' },
 
 ## License
 
-MIT — build something legendary.
+Apache License 2.0 — build something legendary.

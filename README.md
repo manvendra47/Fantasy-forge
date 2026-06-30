@@ -225,7 +225,7 @@ long: { max: 2000, words: '1400–1800 words' },
 | `PORT` | No | 5000 | Server port |
 | `MONGODB_URI` | Yes | — | MongoDB connection string |
 | `JWT_SECRET` | Yes | — | JWT signing secret (use a long random string) |
-| `AI_PROVIDER` | No | ollama | `ollama`, `huggingface`, or `groq` |
+| `AI_PROVIDER` | Yes |  | `huggingface`, or `groq` |
 | `HUGGINGFACE_API_KEY` | If HF | — | HuggingFace access token |
 | `HUGGINGFACE_MODEL` | If HF | Mistral-7B-Instruct-v0.2 | HF model ID |
 | `GROQ_API_KEY` | If Groq | — | Groq API key |

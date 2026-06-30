@@ -233,7 +233,4 @@ long: { max: 2000, words: '1400–1800 words' },
 | `CLIENT_URL` | No | http://localhost:5173 | CORS allowed origin |
 
 ---
-
-## License
-
-Apache License 2.0 — build something legendary.
+## build something legendary.
